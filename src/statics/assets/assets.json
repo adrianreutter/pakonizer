@@ -1,0 +1,11 @@
+{
+  "bodies": [
+     "/statics/assets/body1.png"
+  ],
+  "mouths": [
+     "/statics/assets/acc2.png"
+  ],
+  "eyes": [
+    "/statics/assets/acc1.png"
+  ]
+}
