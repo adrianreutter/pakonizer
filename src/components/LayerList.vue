@@ -1,10 +1,10 @@
 <template>
   <q-list separator>
     <draggable class="dragArea" tag="div" :list="layers" :group="{ name: 'g1' }">
-      <q-item v-for="el in layers" :key="el.name">
+      <q-item clickable v-for="el in layers" :key="el.name" :active="el === activeLayer" @click="selectLayer(el)">
         <q-item-section avatar>
-          <q-avatar>
-            <img :src="el.image">
+          <q-avatar rounded>
+            <img :src="el.src">
           </q-avatar>
         </q-item-section>
 
@@ -33,7 +33,8 @@ export default {
     draggable
   },
   data: () => ({
-    file: null
+    file: null,
+    activeLayer: null
   }),
   methods: {
     uploadNewLayer (e) {
@@ -44,7 +45,11 @@ export default {
       fileReader.onloadend = () => {
         self.layers.push({
           name: `Layer ${self.layers.length + 1}`,
-          image: fileReader.result
+          src: fileReader.result,
+          position: {
+            x: 0,
+            y: 0
+          }
         })
         this.$emit('update')
       }
@@ -55,6 +60,10 @@ export default {
         this.layers.splice(index, 1)
       }
       this.$emit('update')
+    },
+    selectLayer (layer) {
+      this.activeLayer = layer
+      this.$emit('newActiveLayer', layer)
     }
   }
 }

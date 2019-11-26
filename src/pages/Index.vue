@@ -1,8 +1,8 @@
 <template>
   <q-page class="flex flex-center">
     <a href="#" id="downloader" @click="download" download="image.png">Download!</a>
-    <canvas id="canvas" class="preview"></canvas>
-    <layer-list :layers="layers" @update="draw()"></layer-list>
+    <canvas id="canvas" class="preview" @mousedown="startDragging" @mouseup="stopDragging" @mousemove="move"></canvas>
+    <layer-list :layers="layers" @update="draw()" @newActiveLayer="onNewActiveLayer"></layer-list>
   </q-page>
 </template>
 
@@ -13,7 +13,11 @@ export default {
   components: { LayerList },
   data: () => ({
     canvas: null,
-    layers: []
+    layers: [],
+    activeLayer: null,
+    dragging: false,
+    offsetToImage: null,
+    interval: null
   }),
   methods: {
     download () {
@@ -22,26 +26,52 @@ export default {
     },
     draw () {
       console.log('draw')
-      console.log(this.layers)
-      let canvas = document.getElementById('canvas')
-      canvas.width = 200
-      canvas.height = 200
-      let ctx = canvas.getContext('2d')
+      let ctx = this.canvas.getContext('2d')
+      ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       this.layers.forEach(layer => {
-        console.log('test')
         let img = new Image()
-        img.src = layer.image
+        img.src = layer.src
+        layer.img = img
         img.onload = function () {
-          ctx.drawImage(img, 0, 0)
+          ctx.drawImage(img, layer.position.x, layer.position.y)
         }
       })
+      setTimeout(function () {
+      }, 1000)
+    },
+    startDragging (e) {
+      let img = this.activeLayer.img
+      let pos = this.activeLayer.position
+      if (e.offsetX >= pos.x && e.offsetX <= pos.x + img.width &&
+        e.offsetY >= pos.y && e.offsetY <= pos.y + img.height) {
+        this.dragging = true
+        this.offsetToImage = { x: e.offsetX - pos.x, y: e.offsetY - pos.y }
+      }
+    },
+    stopDragging () {
+      this.dragging = false
+      clearInterval(this.interval)
+      this.interval = null
+    },
+    move (e) {
+      if (this.dragging) {
+        if (this.interval == null) {
+          this.interval = window.setInterval(this.draw, 100)
+        }
+        this.layers.forEach(layer => {
+          if (layer === this.activeLayer) {
+            layer.position.x = e.offsetX - this.offsetToImage.x
+            layer.position.y = e.offsetY - this.offsetToImage.y
+          }
+        })
+      }
+    },
+    onNewActiveLayer (layer) {
+      this.activeLayer = layer
     }
   },
   mounted () {
     this.canvas = document.getElementById('canvas')
-    this.canvas.onmousedown = (event) => {
-      console.log(event.offsetX)
-    }
     this.canvas.width = 400
     this.canvas.height = 400
     this.draw()
@@ -51,8 +81,8 @@ export default {
 
 <style>
   .preview {
-    height: 200px;
-    width: 200px;
+    height: 400px;
+    width: 400px;
     border: 1px black solid;
   }
 </style>
