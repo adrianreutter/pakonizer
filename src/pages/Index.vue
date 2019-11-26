@@ -1,7 +1,7 @@
 <template>
   <q-page class="flex flex-center">
     <a href="#" id="downloader" @click="download" download="image.png">Download!</a>
-    <canvas id="canvas" class="preview" @mousedown="startDragging" @mouseup="stopDragging" @mousemove="move"></canvas>
+    <canvas id="canvas" class="preview" @mousedown="startDragging" @mouseup="stopDragging" @mousemove="move" @wheel="scrolling"></canvas>
     <layer-list :layers="layers" @update="draw()" @newActiveLayer="onNewActiveLayer"></layer-list>
   </q-page>
 </template>
@@ -29,21 +29,28 @@ export default {
       let ctx = this.canvas.getContext('2d')
       ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
       this.layers.forEach(layer => {
-        let img = new Image()
-        img.src = layer.src
-        layer.img = img
-        img.onload = function () {
-          ctx.drawImage(img, layer.position.x, layer.position.y)
+        if (layer.img == null) {
+          let img = new Image()
+          img.src = layer.src
+          layer.img = img
+          layer.width = img.width
+          layer.height = img.height
+          img.onload = function () {
+            ctx.drawImage(img, layer.position.x, layer.position.y, layer.width, layer.height)
+          }
+        } else {
+          console.log(layer.img.width)
+          ctx.drawImage(layer.img, layer.position.x, layer.position.y, layer.width, layer.height)
         }
       })
       setTimeout(function () {
       }, 1000)
     },
     startDragging (e) {
-      let img = this.activeLayer.img
+      let layer = this.activeLayer
       let pos = this.activeLayer.position
-      if (e.offsetX >= pos.x && e.offsetX <= pos.x + img.width &&
-        e.offsetY >= pos.y && e.offsetY <= pos.y + img.height) {
+      if (e.offsetX >= pos.x && e.offsetX <= pos.x + layer.width &&
+        e.offsetY >= pos.y && e.offsetY <= pos.y + layer.height) {
         this.dragging = true
         this.offsetToImage = { x: e.offsetX - pos.x, y: e.offsetY - pos.y }
       }
@@ -65,6 +72,18 @@ export default {
           }
         })
       }
+    },
+    scrolling (event) {
+      let delta = Math.sign(event.deltaY) * 0.1
+      this.layers.forEach(layer => {
+        if (layer === this.activeLayer) {
+          console.log('update', layer.img.width * (1 + delta))
+          layer.width = layer.width * (1 + delta)
+          layer.height = layer.height * (1 + delta)
+        }
+      })
+      this.draw()
+      event.preventDefault()
     },
     onNewActiveLayer (layer) {
       this.activeLayer = layer
