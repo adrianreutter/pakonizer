@@ -2,64 +2,18 @@
   <q-page class="flex flex-center">
     <a href="#" id="downloader" @click="download" download="image.png">Download!</a>
     <canvas id="canvas" class="preview"></canvas>
-    <div>
-      <q-input v-model="body" label="Body" rounded>
-        <template v-slot:prepend>
-          <q-btn round dense flat icon="remove" />
-        </template>
-
-        <template v-slot:append>
-          <q-btn round dense flat icon="add" />
-        </template>
-      </q-input>
-      <q-input v-model="eye" label="Eye" rounded>
-        <template v-slot:prepend>
-          <q-btn round dense flat icon="remove" />
-        </template>
-
-        <template v-slot:append>
-          <q-btn round dense flat icon="add" />
-        </template>
-      </q-input>
-      x: {{ eyeX }}
-      <q-slider v-model="eyeX" :min="0" :max="200"  @change="draw"/>
-      y: {{ eyeY }}
-      <q-slider v-model="eyeY" :min="0" :max="200" color="green" @change="draw"/>
-      Scale: {{ eyeScale }}
-      <q-slider v-model="eyeScale" :min="0" :max="2" :step="0.1" @change="draw"/>
-      <q-input v-model="mouth" label="Mouth" rounded >
-        <template v-slot:prepend>
-          <q-btn round dense flat icon="remove" />
-        </template>
-
-        <template v-slot:append>
-          <q-btn round dense flat icon="add" />
-        </template>
-      </q-input>
-      x: {{ mouthX }}
-      <q-slider v-model="mouthX" :min="0" :max="200" @change="draw"/>
-      y: {{ mouthY }}
-      <q-slider v-model="mouthY" :min="0" :max="200" color="green" @change="draw"/>
-      Scale: {{ mouthScale }}
-      <q-slider v-model="mouthScale" :min="0" :max="2" :step="0.1" @change="draw"/>
-    </div>
+    <layer-list :layers="layers" @update="draw()"></layer-list>
   </q-page>
 </template>
 
 <script>
-import assets from '../statics/assets/assets.json'
+import LayerList from '../components/LayerList'
 export default {
   name: 'PageIndex',
+  components: { LayerList },
   data: () => ({
-    body: 1,
-    eye: 1,
-    eyeX: 0,
-    eyeY: 0,
-    eyeScale: 1,
-    mouth: 1,
-    mouthX: 0,
-    mouthY: 0,
-    mouthScale: 1
+    canvas: null,
+    layers: []
   }),
   methods: {
     download () {
@@ -68,31 +22,28 @@ export default {
     },
     draw () {
       console.log('draw')
+      console.log(this.layers)
       let canvas = document.getElementById('canvas')
       canvas.width = 200
       canvas.height = 200
       let ctx = canvas.getContext('2d')
-      let bodyImage = new Image()
-      bodyImage.src = assets.bodies[this.body - 1]
-      bodyImage.onload = function (ev) {
-        ctx.drawImage(bodyImage, 0, 0)
-      }
-      let mouthImage = new Image()
-      mouthImage.src = assets.mouths[this.mouth - 1]
-
-      mouthImage.onload = () => {
-        ctx.drawImage(mouthImage, this.mouthX, this.mouthY, mouthImage.width * this.mouthScale, mouthImage.height * this.mouthScale)
-      }
-
-      let eyeImage = new Image()
-      eyeImage.src = assets.eyes[this.eye - 1]
-
-      eyeImage.onload = () => {
-        ctx.drawImage(eyeImage, this.eyeX, this.eyeY, eyeImage.width * this.eyeScale, eyeImage.height * this.eyeScale)
-      }
+      this.layers.forEach(layer => {
+        console.log('test')
+        let img = new Image()
+        img.src = layer.image
+        img.onload = function () {
+          ctx.drawImage(img, 0, 0)
+        }
+      })
     }
   },
   mounted () {
+    this.canvas = document.getElementById('canvas')
+    this.canvas.onmousedown = (event) => {
+      console.log(event.offsetX)
+    }
+    this.canvas.width = 400
+    this.canvas.height = 400
     this.draw()
   }
 }
