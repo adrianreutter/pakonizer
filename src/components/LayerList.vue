@@ -1,5 +1,5 @@
 <template>
-  <q-list separator>
+  <q-list separator bordered>
     <draggable class="dragArea" tag="div" :list="layers" :group="{ name: 'g1' }" @end="$emit('update')">
       <q-item clickable v-for="el in layers" :key="el.name" :active="el === activeLayer" @click="selectLayer(el)">
         <q-item-section avatar>
@@ -44,7 +44,7 @@ export default {
       let self = this
       fileReader.onloadend = () => {
         self.layers.push({
-          name: `Layer ${self.layers.length + 1}`,
+          name: file.name,
           src: fileReader.result,
           position: {
             x: 0,

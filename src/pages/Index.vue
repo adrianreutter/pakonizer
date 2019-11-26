@@ -1,7 +1,16 @@
 <template>
   <q-page class="flex flex-center">
-    <a href="#" id="downloader" @click="download" download="image.png">Download!</a>
-    <canvas id="canvas" class="preview" @mousedown="startDragging" @mouseup="stopDragging" @mousemove="move" @wheel="scrolling"></canvas>
+    <div class="column">
+      <canvas
+        id="canvas"
+        class="preview q-mb-lg"
+        @mousedown="startDragging"
+        @mouseup="stopDragging"
+        @mousemove="move"
+        @wheel="scrolling"
+      ></canvas>
+      <a href="#" id="downloader" @click="download" download="image.png" class="button">Download</a>
+    </div>
     <layer-list :layers="layers" @update="draw()" @newActiveLayer="onNewActiveLayer"></layer-list>
   </q-page>
 </template>
@@ -77,7 +86,6 @@ export default {
       let delta = Math.sign(event.deltaY) * 0.1
       this.layers.forEach(layer => {
         if (layer === this.activeLayer) {
-          console.log('update', layer.img.width * (1 + delta))
           layer.width = layer.width * (1 + delta)
           layer.height = layer.height * (1 + delta)
         }
@@ -103,5 +111,27 @@ export default {
     height: 400px;
     width: 400px;
     border: 1px black solid;
+  }
+  a {
+    background-color: red;
+    box-shadow: 0 5px 0 darkred;
+    color: white;
+    padding: 0.5em 0.5em;
+    position: relative;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bolder;
+    text-align: center;
+    border-radius: 5px;
+    font-size: 20px;
+  }
+  a:hover {
+    background-color: #ce0606;
+    cursor: pointer;
+  }
+
+  a:active {
+    box-shadow: none;
+    top: 5px;
   }
 </style>
