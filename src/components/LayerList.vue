@@ -1,6 +1,6 @@
 <template>
   <q-list separator>
-    <draggable class="dragArea" tag="div" :list="layers" :group="{ name: 'g1' }">
+    <draggable class="dragArea" tag="div" :list="layers" :group="{ name: 'g1' }" @end="$emit('update')">
       <q-item clickable v-for="el in layers" :key="el.name" :active="el === activeLayer" @click="selectLayer(el)">
         <q-item-section avatar>
           <q-avatar rounded>
